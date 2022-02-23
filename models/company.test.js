@@ -136,7 +136,7 @@ describe("findAll", function () {
 
     expect(() => {
       Company.findAll(filters);
-    }).toThrow(new BadRequestError("Bad filter name"));
+    }).toThrow(new BadRequestError("Filters aren't correct"));
   });
 
   test("fails: filter minemployees > maxemployees", async function () {
@@ -147,8 +147,7 @@ describe("findAll", function () {
 
     expect(() => {
       Company.findAll(filters);
-    }).toThrow(new BadRequestError(
-      "minEmployees cannot be greater than maxEmployees"));
+    }).toThrow(new BadRequestError("Filters aren't correct"));
 
   });
 
