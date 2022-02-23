@@ -18,7 +18,7 @@ const { BadRequestError } = require("../expressError");
  * The function returns an object with key of "setCols" which is a string of
  * column names followed by =$<num> (where num increments from 1)
  *  and a key of "values" which is an array of values
- *  { setCols: ["name=$1", "description=$2", "num_employees=$3", "logo_url=$4"]
+ *  { setCols: '"name=$1", "description=$2", "num_employees=$3", "logo_url=$4"',
  *    values: ["Coca-cola", "beverage company", 50000, "http://coca-cola.img"]}
  */
 

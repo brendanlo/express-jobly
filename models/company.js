@@ -18,16 +18,16 @@ class Company {
 
   static async create({ handle, name, description, numEmployees, logoUrl }) {
     const duplicateCheck = await db.query(
-        `SELECT handle
+      `SELECT handle
            FROM companies
            WHERE handle = $1`,
-        [handle]);
+      [handle]);
 
     if (duplicateCheck.rows[0])
       throw new BadRequestError(`Duplicate company: ${handle}`);
 
     const result = await db.query(
-        `INSERT INTO companies(
+      `INSERT INTO companies(
           handle,
           name,
           description,
@@ -36,13 +36,13 @@ class Company {
            VALUES
              ($1, $2, $3, $4, $5)
            RETURNING handle, name, description, num_employees AS "numEmployees", logo_url AS "logoUrl"`,
-        [
-          handle,
-          name,
-          description,
-          numEmployees,
-          logoUrl,
-        ],
+      [
+        handle,
+        name,
+        description,
+        numEmployees,
+        logoUrl,
+      ],
     );
     const company = result.rows[0];
 
@@ -54,9 +54,36 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll() {
+  static async findAll(filters) {
+    console.log("in findAll(), filters = ", filters);
+
+    // check valid inputs before querying SQL
+    if (filters.minEmployees > filters.maxEmployees) {
+      throw new BadRequestError("minEmployees cannot be greater than maxEmployees");
+    }
+
+    for (let filter in filters) {
+      if (!["minEmployees", "maxEmployees", "nameLike"].includes(filter)) {
+        throw new BadRequestError(`${filter} is not a valid filter name`);
+      }
+    }
+
+    // format the filters so that they can be used in SQL
+    const keys = Object.keys(filters);
+    const vals = Object.values(filters);
+
+    let whereClause;
+    whereClause = keys.map(function (key, index) {
+      `${whereClause || "WHERE"} ${key}=${index},`
+    });
+
+    console.log("whereClause: ", whereClause);
+
+
+
+    //TODO need to pass filters into the sql statement. Does this need to be formatted before doing so?
     const companiesRes = await db.query(
-        `SELECT handle,
+      `SELECT handle,
                 name,
                 description,
                 num_employees AS "numEmployees",
@@ -76,14 +103,14 @@ class Company {
 
   static async get(handle) {
     const companyRes = await db.query(
-        `SELECT handle,
+      `SELECT handle,
                 name,
                 description,
                 num_employees AS "numEmployees",
                 logo_url AS "logoUrl"
            FROM companies
            WHERE handle = $1`,
-        [handle]);
+      [handle]);
 
     const company = companyRes.rows[0];
 
@@ -106,11 +133,11 @@ class Company {
 
   static async update(handle, data) {
     const { setCols, values } = sqlForPartialUpdate(
-        data,
-        {
-          numEmployees: "num_employees",
-          logoUrl: "logo_url",
-        });
+      data,
+      {
+        numEmployees: "num_employees",
+        logoUrl: "logo_url",
+      });
     const handleVarIdx = "$" + (values.length + 1);
 
     const querySql = `
@@ -133,11 +160,11 @@ class Company {
 
   static async remove(handle) {
     const result = await db.query(
-        `DELETE
+      `DELETE
            FROM companies
            WHERE handle = $1
            RETURNING handle`,
-        [handle]);
+      [handle]);
     const company = result.rows[0];
 
     if (!company) throw new NotFoundError(`No company: ${handle}`);
