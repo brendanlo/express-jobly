@@ -1,6 +1,6 @@
 "use strict";
 
-const { sqlForPartialUpdate } = require("./sql");
+const { sqlForPartialUpdate, sqlForWhere } = require("./sql");
 const { BadRequestError } = require("../expressError");
 
 
@@ -64,6 +64,54 @@ describe("testing sqlForPartialUpdate", function () {
       setCols: '"name"=$1, "description"=$2, "numEmployees"=$3',
       values: ["Pear Incorpearated", "creators of pear programming", 1000]
     });
+  });
+
+});
+
+
+describe("testing sqlForWhere", function () {
+  test("Success case: all filters", function () {
+    let filters = {
+      nameLike: "2",
+      minEmployees: "2",
+      maxEmployees: "2"
+    };
+
+    expect(sqlForWhere(filters)).toEqual(`WHERE name ilike "%2%" 
+                                          AND num_employees >= 2
+                                          AND num_employees <= 2`);
+
+  });
+
+  test("Success case: 1 filter", function () {
+    let filters = {
+      nameLike: "2",
+    };
+
+    expect(sqlForWhere(filters)).toEqual(`WHERE name ilike "%2%"`);
+
+  });
+
+  test("Fail case: invalid filter name", function () {
+    let filters = {
+      incorrectName: "2"
+    };
+    expect(() => {
+      sqlForWhere(filters);
+    }).toThrow(new BadRequestError("incorrectName is not a valid filter name"));
+
+  });
+
+  test("Fail case: filter minEmployees > maxEmployees", function () {
+    let filters = {
+      minEmployees: "10",
+      maxEmployees: "2"
+    };
+    expect(() => {
+      sqlForWhere(filters);
+    }).toThrow(new BadRequestError("minEmployees cannot be greater than maxEmployees");
+
+
   });
 
 });

@@ -88,7 +88,7 @@ describe("findAll", function () {
 
   test("works: passing all filters", async function () {
     let filters = {
-      name: "2",
+      nameLike: "2",
       minEmployees: "2",
       maxEmployees: "2"
     };
@@ -105,30 +105,6 @@ describe("findAll", function () {
     ]);
   });
 
-  test("works: passing 1 filter", async function () {
-    let filters = {
-      minEmployees: "2"
-    };
-    let companies = await Company.findAll(filters);
-
-    expect(companies).toEqual([
-      {
-        handle: "c2",
-        name: "C2",
-        description: "Desc2",
-        numEmployees: 2,
-        logoUrl: "http://c2.img",
-      },
-      {
-        handle: "c3",
-        name: "C3",
-        description: "Desc3",
-        numEmployees: 3,
-        logoUrl: "http://c3.img",
-      },
-    ]);
-  });
-
   test("fails: passing invalid filter name", async function () {
     let filters = {
       incorrectName: "2"
@@ -138,19 +114,6 @@ describe("findAll", function () {
       Company.findAll(filters);
     }).toThrow(new BadRequestError("incorrectName is not a valid filter name"));
   });
-
-  test("fails: filter minemployees > maxemployees", async function () {
-    let filters = {
-      minEmployees: "10",
-      maxEmployees: "2"
-    };
-
-    expect(() => {
-      Company.findAll(filters);
-    }).toThrow(new BadRequestError("minEmployees cannot be greater than maxEmployees"));
-
-  });
-
 
 });
 

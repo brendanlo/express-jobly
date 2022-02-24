@@ -39,4 +39,59 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   };
 }
 
-module.exports = { sqlForPartialUpdate };
+
+/** This function converts filters from a route into syntax for a SQL WHERE 
+ * clause. It will perform the following checks on the filters:
+ * 1) minEmployees < maxEmployees
+ * 2) the filter names are one of (minEmployees, maxEmployees, nameLike)
+ * 
+ * It takes an object whose keys are filter names and values are the filter value
+ *  {minEmployees: 10, maxEmployees: 20, nameLike: "cola"}
+ * 
+ * It returns a string formatted to look like a SQL WHERE clause:
+ * 
+ * { WHERE }
+ * 
+ * 'WHERE num_employees > 10 AND num_employees < 20 and name ilike "cola"'
+ */
+function sqlForWhere(filters) {
+  if (!filters) return;
+
+  // check valid inputs before querying writing WHERE statement
+  if (parseInt(filters.minEmployees) > parseInt(filters.maxEmployees)) {
+    throw new BadRequestError("minEmployees cannot be greater than maxEmployees");
+  }
+
+  const validFilters = ["minEmployees", "maxEmployees", "nameLike"];
+
+  for (let filterKey in filters) {
+    if (!validFilters.includes(filterKey)) {
+      throw new BadRequestError(`${filterKey} is not a valid filter name`);
+    }
+  }
+
+  // Create the WHERE string for SQL using the filters
+  let whereArr = [];
+
+  for (let filterKey in filters) {
+    if (filterKey === 'minEmployees') {
+      whereArr.push(`num_employees >= ${filters[filterKey]}`);
+    }
+    else if (filterKey === 'maxEmployees') {
+      whereArr.push(`num_employees <= ${filters[filterKey]}`);
+    }
+    else {
+      whereArr.push(`name ilike '%${filters[filterKey]}%'`);
+    }
+  }
+
+  // console.log("whereArr", whereArr)
+  const whereStr = "WHERE " + whereArr.join(" AND ");
+
+  return whereStr;
+}
+
+module.exports = {
+  sqlForPartialUpdate,
+  sqlForWhere
+};

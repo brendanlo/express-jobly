@@ -2,7 +2,7 @@
 
 const db = require("../db");
 const { BadRequestError, NotFoundError } = require("../expressError");
-const { sqlForPartialUpdate } = require("../helpers/sql");
+const { sqlForPartialUpdate, sqlForWhere } = require("../helpers/sql");
 
 /** Related functions for companies. */
 
@@ -57,41 +57,37 @@ class Company {
   static async findAll(filters) {
     console.log("in findAll(), filters = ", filters);
 
-    // check valid inputs before querying SQL
-    if (filters.minEmployees > filters.maxEmployees) {
-      throw new BadRequestError("minEmployees cannot be greater than maxEmployees");
-    }
-
-    for (let filter in filters) {
-      if (!["minEmployees", "maxEmployees", "nameLike"].includes(filter)) {
-        throw new BadRequestError(`${filter} is not a valid filter name`);
-      }
-    }
-
-    // format the filters so that they can be used in SQL
-    const keys = Object.keys(filters);
-    const vals = Object.values(filters);
-
-    let whereClause;
-    whereClause = keys.map(function (key, index) {
-      `${whereClause || "WHERE"} ${key}=${index},`
-    });
-
-    console.log("whereClause: ", whereClause);
-
-
-
-    //TODO need to pass filters into the sql statement. Does this need to be formatted before doing so?
-    const companiesRes = await db.query(
-      `SELECT handle,
-                name,
-                description,
-                num_employees AS "numEmployees",
-                logo_url AS "logoUrl"
-           FROM companies
-           ORDER BY name`);
+    let query = `SELECT handle,
+                      name,
+                      description,
+                      num_employees AS "numEmployees",
+                      logo_url AS "logoUrl"
+                  FROM companies
+                  ${sqlForWhere(filters)}
+                  ORDER BY name`;
+    const companiesRes = await db.query(query);
     return companiesRes.rows;
+
+
+
+    //NOTE reference if needed
+    //   const companiesRes = await db.query(
+    //     `SELECT handle,
+    //               name,
+    //               description,
+    //               num_employees AS "numEmployees",
+    //               logo_url AS "logoUrl"
+    //          FROM companies
+    //          WHERE num_employees > $1
+    //          AND num_employees < $2
+    //          AND name ilike $3
+    //          ORDER BY name`, [filter.minEmployees, filter.maxEmployees, filter.nameLike]);
+    //   return companiesRes.rows;
+    // }
   }
+
+
+
 
   /** Given a company handle, return data about company.
    *
