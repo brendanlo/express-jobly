@@ -49,8 +49,12 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   const filters = req.query;
-  if (filters.minEmployees) { filters.minEmployees = parseInt(filters.minEmployees) }
-  if (filters.maxEmployees) { filters.maxEmployees = parseInt(filters.maxEmployees) }
+  if (filters.minEmployees != undefined) {
+    filters.minEmployees = Number(filters.minEmployees)
+  }
+  if (filters.maxEmployees != undefined) {
+    filters.maxEmployees = Number(filters.maxEmployees)
+  }
 
   const result = jsonschema.validate(filters, companyFilterSchema);
 

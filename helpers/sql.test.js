@@ -1,6 +1,6 @@
 "use strict";
 
-const { sqlForPartialUpdate, sqlForWhere } = require("./sql");
+const { sqlForPartialUpdate } = require("./sql");
 const { BadRequestError } = require("../expressError");
 
 
@@ -69,51 +69,4 @@ describe("testing sqlForPartialUpdate", function () {
 });
 
 
-describe("testing sqlForWhere", function () {
-  test("Success case: all filters", function () {
-    let filters = {
-      nameLike: "2",
-      minEmployees: "2"
-    };
 
-    expect(sqlForWhere(filters)).toEqual({
-      whereStr: `WHERE name ilike $1 AND num_employees >= $2`,
-      whereVars: ["%2%", "2"]
-    });
-
-  });
-
-  test("Success case: 1 filter", function () {
-    let filters = {
-      nameLike: "2",
-    };
-
-    expect(sqlForWhere(filters)).toEqual({
-      whereStr: `WHERE name ilike $1`,
-      whereVars: ["%2%"]
-    });
-  });
-
-  test("Fail case: invalid filter name", function () {
-    let filters = {
-      incorrectName: "2"
-    };
-    expect(() => {
-      sqlForWhere(filters);
-    }).toThrow(new BadRequestError("incorrectName is not a valid filter name"));
-
-  });
-
-  test("Fail case: filter minEmployees > maxEmployees", function () {
-    let filters = {
-      minEmployees: 10,
-      maxEmployees: 2
-    };
-    expect(() => {
-      sqlForWhere(filters);
-    }).toThrow(new BadRequestError("minEmployees cannot be greater than maxEmployees"));
-
-
-  });
-
-});

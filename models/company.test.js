@@ -85,12 +85,11 @@ describe("findAll", function () {
       },
     ]);
   });
-
   test("works: passing all filters", async function () {
     let filters = {
       nameLike: "2",
-      minEmployees: "2",
-      maxEmployees: "2"
+      minEmployees: 2,
+      maxEmployees: 12
     };
     let companies = await Company.findAll(filters);
 
@@ -235,4 +234,55 @@ describe("remove", function () {
       expect(err instanceof NotFoundError).toBeTruthy();
     }
   });
+});
+
+/********************************** sqlforWhere */
+
+describe("testing sqlForWhere", function () {
+  test("Success case: all filters", function () {
+    let filters = {
+      nameLike: "2",
+      minEmployees: "2"
+    };
+
+    expect(Company.sqlForWhere(filters)).toEqual({
+      whereStr: `WHERE name ilike $1 AND num_employees >= $2`,
+      whereVars: ["%2%", "2"]
+    });
+
+  });
+
+  test("Success case: 1 filter", function () {
+    let filters = {
+      nameLike: "2",
+    };
+
+    expect(Company.sqlForWhere(filters)).toEqual({
+      whereStr: `WHERE name ilike $1`,
+      whereVars: ["%2%"]
+    });
+  });
+
+  test("Fail case: invalid filter name", function () {
+    let filters = {
+      incorrectName: "2"
+    };
+    expect(() => {
+      Company.sqlForWhere(filters);
+    }).toThrow(new BadRequestError("incorrectName is not a valid filter name"));
+
+  });
+
+  test("Fail case: filter minEmployees > maxEmployees", function () {
+    let filters = {
+      minEmployees: 10,
+      maxEmployees: 2
+    };
+    expect(() => {
+      Company.sqlForWhere(filters);
+    }).toThrow(new BadRequestError("minEmployees cannot be greater than maxEmployees"));
+
+    //TODO another test: check that there's a test where minEmployees === maxEmployees
+  });
+
 });

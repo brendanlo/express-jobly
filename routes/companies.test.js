@@ -106,9 +106,9 @@ describe("GET /companies", function () {
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(500);
   });
-
+  // NOTE maxEmployees "12" would be less than "2"
   test("success: test filter", async function () {
-    const resp = await request(app).get("/companies").query({ minEmployees: 2, maxEmployees: 3 });
+    const resp = await request(app).get("/companies").query({ minEmployees: 2, maxEmployees: 12 });
     expect(resp.body).toEqual({
       companies:
         [
