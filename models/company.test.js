@@ -106,15 +106,14 @@ describe("findAll", function () {
   });
 
   test("fails: passing invalid filter name", async function () {
-    let filters = {
-      incorrectName: "2"
-    };
-
-    expect(() => {
-      Company.findAll(filters);
-    }).toThrow(new BadRequestError("incorrectName is not a valid filter name"));
+    try {
+      let filters = { incorrectName: "2" };
+      await Company.findAll(filters)
+      fail();
+    } catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
   });
-
 });
 
 /************************************** get */

@@ -48,17 +48,23 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
  * It takes an object whose keys are filter names and values are the filter value
  *  {minEmployees: 10, maxEmployees: 20, nameLike: "cola"}
  * 
- * It returns a string formatted to look like a SQL WHERE clause:
+ * It returns an object with the first element 'whereStr' being a string 
+ * formatted to look like a SQL WHERE clause:
+ * 'WHERE num_employees > $1 AND num_employees < $2 and name ilike $3'
  * 
- * { WHERE }
+ * And the second element 'whereVars' being an array of values that map to each 
+ * of the SQL placeholders in the WHERE string. nameLikes will have the word
+ * wrapped in %'s for wildcard matching in ilike statement.
+ *  [100, 200, '%cola%']
  * 
- * 'WHERE num_employees > 10 AND num_employees < 20 and name ilike "cola"'
+ * Returns { whereStr: "", whereVar: [] } if the filters object is empty or undefined
  */
 function sqlForWhere(filters) {
-  if (!filters) return;
+  if (!filters || Object.keys(filters).length === 0) return { whereStr: "", whereVar: [] };
 
   // check valid inputs before querying writing WHERE statement
-  if (parseInt(filters.minEmployees) > parseInt(filters.maxEmployees)) {
+  console.log("bool filter.min > filter.max: ", Boolean(filters.minEmployees > filters.maxEmployees));
+  if (filters.minEmployees > filters.maxEmployees) {
     throw new BadRequestError("minEmployees cannot be greater than maxEmployees");
   }
 
@@ -70,25 +76,31 @@ function sqlForWhere(filters) {
     }
   }
 
-  // Create the WHERE string for SQL using the filters
+  // Create the WHERE string & the same index in the 'whereVars' array for SQL 
+  // using the filters
+  const filterKeys = Object.keys(filters);
+
+  let whereVars = [];
   let whereArr = [];
 
-  for (let filterKey in filters) {
+  filterKeys.forEach((filterKey, index) => {
     if (filterKey === 'minEmployees') {
-      whereArr.push(`num_employees >= ${filters[filterKey]}`);
+      whereArr.push(`num_employees >= $${index + 1}`);
+      whereVars.push(filters[filterKey]);
     }
     else if (filterKey === 'maxEmployees') {
-      whereArr.push(`num_employees <= ${filters[filterKey]}`);
+      whereArr.push(`num_employees <= $${index + 1}`);
+      whereVars.push(filters[filterKey]);
     }
     else {
-      whereArr.push(`name ilike '%${filters[filterKey]}%'`);
+      whereArr.push(`name ilike $${index + 1}`);
+      whereVars.push(`%${filters[filterKey]}%`);
     }
-  }
+  });
 
-  // console.log("whereArr", whereArr)
   const whereStr = "WHERE " + whereArr.join(" AND ");
 
-  return whereStr;
+  return { whereStr, whereVars };
 }
 
 module.exports = {

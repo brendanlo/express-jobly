@@ -55,7 +55,8 @@ class Company {
    * */
 
   static async findAll(filters) {
-    console.log("in findAll(), filters = ", filters);
+
+    const { whereStr, whereVars } = sqlForWhere(filters);
 
     let query = `SELECT handle,
                       name,
@@ -63,27 +64,19 @@ class Company {
                       num_employees AS "numEmployees",
                       logo_url AS "logoUrl"
                   FROM companies
-                  ${sqlForWhere(filters)}
+                  ${whereStr}
                   ORDER BY name`;
-    const companiesRes = await db.query(query);
+
+    let companiesRes;
+    if (whereVars) {
+      companiesRes = await db.query(query, [...whereVars]);
+    }
+    else {
+      companiesRes = await db.query(query);
+    }
+
     return companiesRes.rows;
 
-
-
-    //NOTE reference if needed
-    //   const companiesRes = await db.query(
-    //     `SELECT handle,
-    //               name,
-    //               description,
-    //               num_employees AS "numEmployees",
-    //               logo_url AS "logoUrl"
-    //          FROM companies
-    //          WHERE num_employees > $1
-    //          AND num_employees < $2
-    //          AND name ilike $3
-    //          ORDER BY name`, [filter.minEmployees, filter.maxEmployees, filter.nameLike]);
-    //   return companiesRes.rows;
-    // }
   }
 
 

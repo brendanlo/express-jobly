@@ -73,13 +73,13 @@ describe("testing sqlForWhere", function () {
   test("Success case: all filters", function () {
     let filters = {
       nameLike: "2",
-      minEmployees: "2",
-      maxEmployees: "2"
+      minEmployees: "2"
     };
 
-    expect(sqlForWhere(filters)).toEqual(`WHERE name ilike "%2%" 
-                                          AND num_employees >= 2
-                                          AND num_employees <= 2`);
+    expect(sqlForWhere(filters)).toEqual({
+      whereStr: `WHERE name ilike $1 AND num_employees >= $2`,
+      whereVars: ["%2%", "2"]
+    });
 
   });
 
@@ -88,8 +88,10 @@ describe("testing sqlForWhere", function () {
       nameLike: "2",
     };
 
-    expect(sqlForWhere(filters)).toEqual(`WHERE name ilike "%2%"`);
-
+    expect(sqlForWhere(filters)).toEqual({
+      whereStr: `WHERE name ilike $1`,
+      whereVars: ["%2%"]
+    });
   });
 
   test("Fail case: invalid filter name", function () {
@@ -104,12 +106,12 @@ describe("testing sqlForWhere", function () {
 
   test("Fail case: filter minEmployees > maxEmployees", function () {
     let filters = {
-      minEmployees: "10",
-      maxEmployees: "2"
+      minEmployees: 10,
+      maxEmployees: 2
     };
     expect(() => {
       sqlForWhere(filters);
-    }).toThrow(new BadRequestError("minEmployees cannot be greater than maxEmployees");
+    }).toThrow(new BadRequestError("minEmployees cannot be greater than maxEmployees"));
 
 
   });
