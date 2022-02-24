@@ -263,6 +263,19 @@ describe("testing sqlForWhere", function () {
     });
   });
 
+  test("success case: filter minEmployees === maxEmployees", function () {
+    let filters = {
+      minEmployees: 2,
+      maxEmployees: 2
+    };
+
+    expect(Company.sqlForWhere(filters)).toEqual({
+      whereStr: `WHERE num_employees >= $1 AND num_employees <= $2`,
+      whereVars: [2, 2]
+    });
+  });
+
+
   test("Fail case: invalid filter name", function () {
     let filters = {
       incorrectName: "2"
@@ -282,7 +295,7 @@ describe("testing sqlForWhere", function () {
       Company.sqlForWhere(filters);
     }).toThrow(new BadRequestError("minEmployees cannot be greater than maxEmployees"));
 
-    //TODO another test: check that there's a test where minEmployees === maxEmployees
   });
+
 
 });

@@ -35,7 +35,11 @@ class Company {
           logo_url)
            VALUES
              ($1, $2, $3, $4, $5)
-           RETURNING handle, name, description, num_employees AS "numEmployees", logo_url AS "logoUrl"`,
+           RETURNING handle,
+                    name, 
+                    description, 
+                    num_employees AS "numEmployees", 
+                    logo_url AS "logoUrl"`,
       [
         handle,
         name,
@@ -129,7 +133,11 @@ class Company {
       UPDATE companies
       SET ${setCols}
         WHERE handle = ${handleVarIdx}
-        RETURNING handle, name, description, num_employees AS "numEmployees", logo_url AS "logoUrl"`;
+        RETURNING handle, 
+                  name, 
+                  description, 
+                  num_employees AS "numEmployees", 
+                  logo_url AS "logoUrl"`;
     const result = await db.query(querySql, [...values, handle]);
     const company = result.rows[0];
 
@@ -184,7 +192,8 @@ class Company {
 
     // check valid inputs before querying writing WHERE statement
     if (filters.minEmployees > filters.maxEmployees) {
-      throw new BadRequestError("minEmployees cannot be greater than maxEmployees");
+      throw new
+        BadRequestError("minEmployees cannot be greater than maxEmployees");
     }
 
     const validFilters = ["minEmployees", "maxEmployees", "nameLike"];
