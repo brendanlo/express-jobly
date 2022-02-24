@@ -108,7 +108,7 @@ describe("GET /companies", function () {
   });
 
   test("success: test filter", async function () {
-    const resp = await request(app).get("/companies".query({ minEmployees: 2 }));
+    const resp = await request(app).get("/companies").query({ minEmployees: 2, maxEmployees: 3 });
     expect(resp.body).toEqual({
       companies:
         [
@@ -132,12 +132,14 @@ describe("GET /companies", function () {
   });
 
   test("failure: test filter, bad inputs", async function () {
-    const resp = await request(app).get("/companies".query({ badFilter: 2 }));
+    const resp = await request(app).get("/companies").query({ badFilter: 2 });
 
     expect(resp.statusCode).toEqual(400);
-    expect(resp.body.error.message).toEqual("Filters aren't correct");
+    expect(resp.body.error.message)
+      .toEqual(['instance is not allowed to have the additional property "badFilter"']);
   });
 });
+
 
 /************************************** GET /companies/:handle */
 
