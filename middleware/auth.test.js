@@ -79,7 +79,6 @@ describe("ensureLoggedIn", function () {
 
 
 /****************************************************** ensureAdmin */
-// NOTE ensureAdmin
 
 describe("ensureAdmin", function () {
   test("works, is an admin", function () {
@@ -128,3 +127,86 @@ describe("ensureAdmin", function () {
 });
 
 
+
+/****************************************************** ensureSelfOrAdmin */
+
+describe("ensureSelfOrAdmin", function () {
+  test("works, is an admin", function () {
+    expect.assertions(1);
+    const req = {};
+    const res = {
+      locals: {
+        user: {
+          username: "test",
+          isAdmin: true
+        }
+      }
+    };
+    const next = function (err) {
+      expect(err).toBeFalsy();
+    };
+    ensureLoggedIn(req, res, next);
+
+  });
+
+  test("works: is self, but not admin", function () {
+    expect.assertions(1);
+    const req = { params: { username: "test" } };
+    const res = {
+      locals: {
+        user: {
+          username: "test",
+          isAdmin: false
+        }
+      }
+    };
+    const next = function (err) {
+      expect(err).toBeFalsy();
+    };
+    ensureLoggedIn(req, res, next);
+
+  });
+
+  test("fails, not admin & not self", function () {
+    expect.assertions(1);
+    const req = {
+      params: { username: "not test" }
+    };
+    const res = { locals: { username: "test" } };
+    const next = function (err) {
+      expect(err instanceof UnauthorizedError).toBeTruthy();
+    };
+    ensureLoggedIn(req, res, next);
+  });
+
+  test("fails, isAdmin token = false", function () {
+    expect.assertions(1);
+    const req = {};
+    const res = {
+      locals: {
+        username: "test",
+        isAdmin: false
+      }
+    };
+    const next = function (err) {
+      expect(err instanceof UnauthorizedError).toBeTruthy();
+    };
+    ensureLoggedIn(req, res, next);
+  });
+
+  test("fails, isAdmin token = false & not self", function () {
+    expect.assertions(1);
+    const req = { params: { username: "not test" } };
+    const res = {
+      locals: {
+        username: "test",
+        isAdmin: false
+      }
+    };
+    const next = function (err) {
+      expect(err instanceof UnauthorizedError).toBeTruthy();
+    };
+    ensureLoggedIn(req, res, next);
+  });
+
+});

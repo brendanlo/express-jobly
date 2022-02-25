@@ -30,8 +30,6 @@ describe("POST /companies", function () {
     numEmployees: 10,
   };
 
-
-  // NOTE admin case
   test("ok for admin", async function () {
     const resp = await request(app)
       .post("/companies")
@@ -110,7 +108,7 @@ describe("GET /companies", function () {
         ],
     });
   });
-
+  // NOTE not needed once there's a use case to cause an error
   test("fails: test next() handler", async function () {
     // there's no normal failure event which will cause this route to fail ---
     // thus making it hard to test that the error-handler works with it. This
@@ -199,7 +197,6 @@ describe("GET /companies/:handle", function () {
 
 describe("PATCH /companies/:handle", function () {
 
-  // NOTE admin test
   test("works for admins", async function () {
     const resp = await request(app)
       .patch(`/companies/c1`)
@@ -272,7 +269,6 @@ describe("PATCH /companies/:handle", function () {
 
 describe("DELETE /companies/:handle", function () {
 
-  // NOTE admin test
   test("works for admins", async function () {
     const resp = await request(app)
       .delete(`/companies/c1`)
