@@ -19,7 +19,8 @@ Dependencies:
 * supertest@6.2.2
 
 To install dependencies:
-    `npm install`
+    
+    npm install
 
 To run Express server:
 
